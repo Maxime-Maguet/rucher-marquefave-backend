@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// 1. UTILISATEURS & ADMIN
+// ==========================================
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+model User {
+  id            String  @id @default(uuid())
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  password      String // Mot de passe haché (bcrypt)
+  firstname     String?
+  lastname      String?
+  phone         String?
+  role          Role    @default(CLIENT)
+
+  commandes Order[] // Commandes passées si client connecté
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// 2. CATALOGUE PRODUITS & CATÉGORIES
+// ==========================================
+
+model Category {
+  id          String    @id @default(uuid())
+  nom         String    @unique
+  slug        String    @unique
+  description String?
+  produits    Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  nom           String
+  slug          String   @unique
+  resume        String? // Résumé court pour les cartes produits
+  description   String? // Notes gustatives, origine, fleuraison...
+  anneeRecolte  Int? // Année de récolte
+  misEnAvant    Boolean  @default(false)
+  estDisponible Boolean  @default(true)
+  categoryId    String
+  categorie     Category @relation(fields: [categoryId], references: [id])
+
+  images    ProductImage[]
+  variantes ProductVariant[] // Les déclinaisons de conditionnement (250g, 500g, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  url       String
+  altText   String?
+  ordre     Int     @default(0) // Ordre d'affichage
+  productId String
+  produit   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// Conditionnements & Déclinaisons (ex: Pot 250g, Pot 500g, Pot 1kg)
+model ProductVariant {
+  id          String @id @default(uuid())
+  poidsGramme Int // Poids en g (ex: 250, 500, 1000)
+  prix        Float // Prix en euros (€)
+  stock       Int    @default(0)
+  sku         String @unique // Code référence interne
+
+  productId String
+  produit   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  articlesCommande OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// 3. COMMANDES & CLICK & COLLECT / LIVRAISON
+// ==========================================
+
+enum StatutCommande {
+  EN_ATTENTE_PAIEMENT // Création de la session Stripe
+  PAYEE // Payée, en attente de préparation / expédition
+  EXPEDIEE // Colis envoyé (pour la livraison à domicile)
+  PRETE_RETRAIT // Prête à être récupérée (pour le Click & Collect)
+  TERMINEE // Commande livrée ou récupérée par le client
+  ANNULEE // Annulée / Remboursée
+}
+
+enum ModeLivraison {
+  RETRAIT_RUCHER // Click & Collect direct au rucher
+  RETRAIT_MARCHE // Click & Collect au marché
+  LIVRAISON_DOMICILE // Expédition Colissimo / Mondial Relay
+}
+
+model Order {
+  id              String         @id @default(uuid())
+  numeroCommande  String         @unique
+  statut          StatutCommande @default(EN_ATTENTE_PAIEMENT)
+  montantProduits Float
+  fraisLivraison  Float          @default(0)
+  montantTotal    Float
+
+  // Infos Client
+  clientEmail      String
+  clientTelephone  String
+  clientNomComplet String
+  userId           String?
+  user             User?   @relation(fields: [userId], references: [id])
+
+  // Mode de livraison sélectionné
+  modeLivraison ModeLivraison @default(RETRAIT_RUCHER)
+
+  // Champs spécifiques au Click & Collect
+  dateRetraitSouhaitee DateTime?
+
+  // Champs spécifiques à la Livraison à Domicile
+  adresseRue        String?
+  complementAdresse String?
+  codePostal        String?
+  ville             String?
+  pays              String? @default("France")
+  numeroSuiviColis  String?
+
+  notesClient String?
+
+  // Transaction Stripe
+  stripeSessionId String? @unique
+  stripePaymentId String?
+
+  articles OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id           String @id @default(uuid())
+  quantite     Int
+  prixUnitaire Float
+  orderId      String
+  commande     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  variantId String
+  variante  ProductVariant @relation(fields: [variantId], references: [id])
+}
