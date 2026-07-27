@@ -29,9 +29,9 @@ Développement d'un backend robuste, fortement typé et sécurisé pour alimente
 ### 🟢 Phase 1 : Infrastructure & Data
 
 - [x] Initialisation du projet NestJS & TypeScript
-- [ ] Installation & configuration de Prisma
-- [ ] Modélisation du schéma BDD (`schema.prisma`)
-- [ ] Exécution de la première migration PostgreSQL
+- [x] Installation & configuration de Prisma
+- [x] Modélisation du schéma BDD (`schema.prisma`)
+- [x] Exécution de la première migration PostgreSQL
 
 ### 🟡 Phase 2 : Module Produits (Catalogue)
 
