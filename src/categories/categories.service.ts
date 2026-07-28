@@ -1,36 +1,24 @@
-import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
-//import { UpdateCategoryDto } from './dto/update-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Category, Prisma } from '../generated/prisma/client';
+import { Category } from '../generated/prisma/client';
+import { generateSlug } from '../common/helpers/slug.helper';
+import { CategoryUpdateInput } from '../generated/prisma/models';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    try {
-      const slug = createCategoryDto.nom.toLowerCase().replace(/\s+/g, '-');
-      return await this.prisma.category.create({
-        data: {
-          nom: createCategoryDto.nom,
-          description: createCategoryDto.description,
-          slug,
-        },
-      });
-    } catch (err) {
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2002'
-      ) {
-        throw new ConflictException('Categorie déjà créée');
-      }
-      throw err;
-    }
+    const slug = generateSlug(createCategoryDto.nom);
+    return await this.prisma.category.create({
+      data: {
+        nom: createCategoryDto.nom,
+        description: createCategoryDto.description,
+        slug,
+      },
+    });
   }
 
   findAll() {
@@ -38,26 +26,25 @@ export class CategoriesService {
   }
 
   async findOne(id: Category['id']) {
-    try {
-      return await this.prisma.category.findUniqueOrThrow({
-        where: { id },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
-        throw new NotFoundException(`Catégorie n'existe pas`);
-      }
-      throw error;
-    }
+    return await this.prisma.category.findUniqueOrThrow({
+      where: { id },
+    });
   }
 
-  // update(id: number, updateCategoryDto: UpdateCategoryDto) {
-  //   return `This action updates a #${id} category`;
-  // }
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    const data: CategoryUpdateInput = { ...updateCategoryDto };
+    if (updateCategoryDto.nom) {
+      data.slug = generateSlug(updateCategoryDto.nom);
+    }
+    return await this.prisma.category.update({
+      where: { id },
+      data,
+    });
+  }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} category`;
-  // }
+  async remove(id: string) {
+    return await this.prisma.category.delete({
+      where: { id },
+    });
+  }
 }
