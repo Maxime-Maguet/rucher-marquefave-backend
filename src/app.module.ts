@@ -7,7 +7,12 @@ import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
 
 @Module({
-  imports: [PrismaModule, ConfigModule.forRoot({ isGlobal: true }), ProductsModule, CategoriesModule],
+  imports: [
+    PrismaModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    ProductsModule,
+    CategoriesModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -22,12 +22,25 @@ export class CategoriesService {
   }
 
   findAll() {
-    return this.prisma.category.findMany();
+    return this.prisma.category.findMany({
+      select: {
+        id: true,
+        nom: true,
+        slug: true,
+        description: true,
+      },
+    });
   }
 
   async findOne(id: Category['id']) {
     return await this.prisma.category.findUniqueOrThrow({
       where: { id },
+      select: {
+        id: true,
+        nom: true,
+        slug: true,
+        description: true,
+      },
     });
   }
 
