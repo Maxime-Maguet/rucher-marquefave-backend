@@ -58,6 +58,9 @@ model Product {
   resume        String? // Résumé court pour les cartes produits
   description   String? // Notes gustatives, origine, fleuraison...
   anneeRecolte  Int? // Année de récolte
+  origine       String? // Origine du produit
+  fleuraison    String? // Fleuraison du produit
+  typeMiel      String? // Type de miel
   misEnAvant    Boolean  @default(false)
   estDisponible Boolean  @default(true)
   categoryId    String
