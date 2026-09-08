@@ -17,11 +17,6 @@ import type { UUID } from 'crypto';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(createCategoryDto);
-  }
-
   @Get()
   findAll() {
     return this.categoriesService.findAll();
@@ -31,7 +26,16 @@ export class CategoriesController {
   findOne(@Param('id', ParseUUIDPipe) id: UUID) {
     return this.categoriesService.findOne(id);
   }
+}
 
+@Controller('admin/categories')
+export class AdminCategoriesController {
+  constructor(private readonly categoriesService: CategoriesService) {}
+
+  @Post()
+  create(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoriesService.create(createCategoryDto);
+  }
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: UUID,
