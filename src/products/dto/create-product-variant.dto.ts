@@ -1,35 +1,42 @@
+import { Type, Transform } from 'class-transformer';
 import { ProductVariant } from '../../generated/prisma/client';
 import {
-  IsNotEmpty,
   Min,
   Max,
   IsString,
   IsInt,
   IsOptional,
   IsNumber,
-  IsPositive,
+  IsNotEmpty,
   MaxLength,
+  Matches,
 } from 'class-validator';
+import { trimString } from '../../common/helpers/trim.helper';
 
 export class CreateProductVariantDto implements Partial<ProductVariant> {
-  @IsNotEmpty()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(1500) // 1.5 kg
   poidsGramme!: number;
 
-  @IsNotEmpty()
-  @IsNumber()
-  @IsPositive()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(9999.99)
   prix!: number;
 
-  @IsInt()
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
   @Min(0)
+  @Max(100_000)
   stock?: number;
 
+  @Transform(trimString)
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
+  @Matches(/^[A-Z0-9][A-Z0-9\-_]{1,49}$/i)
   sku!: string;
 }

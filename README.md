@@ -149,7 +149,7 @@ src/
     ├── products.module.ts
     └── dto/
         ├── create-product.dto.ts
-        ├── create-product-variant-dto.ts
+        ├── create-product-variant.dto.ts
         └── create-product-image.dto.ts
 prisma/
 ├── schema.prisma
