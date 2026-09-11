@@ -10,10 +10,7 @@ import {
   Max,
   IsInt,
 } from 'class-validator';
-import {
-  trimString,
-  trimToUndefined,
-} from '../../common/helpers/trim.helper';
+import { trimString, trimToUndefined } from '../../common/helpers/trim.helper';
 
 export class CreateProductImageDto implements Partial<ProductImage> {
   @Transform(trimString)

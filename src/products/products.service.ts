@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { ProductUpdateInput } from '../generated/prisma/models';
 import { Product } from '../generated/prisma/client';
 import { productCardSelect, productDetailSelect } from './products.select';
+import { generateSlug } from '../common/helpers/slug.helper';
 
 @Injectable()
 export class ProductsService {
@@ -24,15 +26,42 @@ export class ProductsService {
     });
   }
 
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  async create(createProductDto: CreateProductDto) {
+    const { nom, variantes, images, ...rest } = createProductDto;
+    const slug = generateSlug(nom);
+    return await this.prisma.product.create({
+      data: {
+        ...rest,
+        nom,
+        slug,
+        variantes: {
+          create: variantes,
+        },
+        images: images?.length
+          ? {
+              create: images,
+            }
+          : undefined,
+      },
+      select: productDetailSelect,
+    });
   }
 
-  update(id: string, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    const data: ProductUpdateInput = { ...updateProductDto };
+    if (updateProductDto.nom) {
+      data.slug = generateSlug(updateProductDto.nom);
+    }
+    return await this.prisma.product.update({
+      where: { id },
+      data,
+      select: productDetailSelect,
+    });
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    return await this.prisma.product.delete({
+      where: { id },
+    });
   }
 }
