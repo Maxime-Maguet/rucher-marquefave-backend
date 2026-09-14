@@ -49,27 +49,29 @@ Backend robuste, fortement typé et sécurisé pour alimenter l'interface client
 - [x] `UpdateCategoryDto` : `PartialType(CreateCategoryDto)`
 - [x] `GET /categories` — public, select minimal (id, nom, slug, description)
 - [x] `GET /categories/:id` — public, `ParseUUIDPipe`, `findUniqueOrThrow`
-- [x] `POST /categories` — (à protéger Admin — Phase 5)
-- [x] `PATCH /categories/:id` — (à protéger Admin — Phase 5)
-- [x] `DELETE /categories/:id` — (à protéger Admin — Phase 5)
+- [x] `POST /admin/categories` — (à protéger Admin — Phase 4)
+- [x] `PATCH /admin/categories/:id` — (à protéger Admin — Phase 4)
+- [x] `DELETE /admin/categories/:id` — (à protéger Admin — Phase 4)
 
-> ⚠️ Les routes de mutation (`POST`, `PATCH`, `DELETE`) existent mais **ne sont pas encore protégées par un guard JWT Admin**. Elles seront verrouillées en Phase 5.
+> ⚠️ Les routes de mutation (`POST`, `PATCH`, `DELETE`) existent mais **ne sont pas encore protégées par un guard JWT Admin**. Elles seront verrouillées en Phase 4.
 
 ---
 
-### 🟡 Phase 3 — Module Products (en cours)
+### ✅ Phase 3 — Module Products
 
 - [x] `CreateProductDto` : tous les champs + `@ValidateNested` pour `variantes` (min 1) et `images`
 - [x] `CreateProductVariantDto` : `poidsGramme`, `prix`, `stock`, `sku`
 - [x] `CreateProductImageDto` : `url`, `altText`, `ordre`
-- [ ] `UpdateProductDto` : `PartialType(CreateProductDto)`
-- [ ] `ProductsService.findAll()` : `estDisponible: true`, include catégorie + variantes + images
-- [ ] `ProductsService.findOne(slug)` : `findUniqueOrThrow` par slug
-- [ ] `ProductsService.create()` : nested create variantes + images, slug auto
-- [ ] `ProductsService.update()` : slug recalculé si nom change
-- [ ] `ProductsService.remove()` : suppression + cascade via Prisma
-- [ ] `ProductsController` : `GET /products`, `GET /products/:slug` (public) — routes admin à protéger Phase 5
-- [ ] Supprimer `entities/product.entity.ts` (inutile avec Prisma)
+- [x] `UpdateProductDto` : `PartialType` + `OmitType` (`variantes` / `images` exclus — nested update plus tard)
+- [x] `ProductsService.findAll()` : `estDisponible: true`, select catégorie + variantes + images
+- [x] `ProductsService.findBySlug(slug)` : `findUniqueOrThrow` par slug
+- [x] `ProductsService.create()` : nested create variantes + images, slug auto
+- [x] `ProductsService.update()` : slug recalculé si nom change
+- [x] `ProductsService.remove()` : suppression + cascade via Prisma
+- [x] `ProductsController` : `GET /products`, `GET /products/:slug` (public) — mutations sous `/admin/products` (à protéger Phase 4)
+- [x] Pas d'`entities/product.entity.ts` (Prisma uniquement)
+
+> ⚠️ Les routes de mutation admin existent mais **ne sont pas encore protégées par un guard JWT**. Elles seront verrouillées en Phase 4.
 
 ---
 
